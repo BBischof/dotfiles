@@ -1,6 +1,5 @@
 font-family = MesloLGS NF
 font-size = 13
 
-theme = dark
 cursor-style = bar
 shell-integration = detect
