@@ -2,79 +2,69 @@
 
 Personal shell configuration. Everything lives in a single `.zshrc`.
 
-## What's included
-
-- **Prompt**: [Powerlevel10k](https://github.com/romkatv/powerlevel10k) via [zinit](https://github.com/zdharma-continuum/zinit)
-- **Plugins**: zsh-autosuggestions, fast-syntax-highlighting, zsh-completions
-- **Tools**: Homebrew, uv, Rust/Cargo, TeX Live, Google Cloud SDK, 1Password CLI
-- **Aliases**: navigation, git, docker, dev tools, OpenMemory project shortcuts
-
 ## Fresh install
 
-### 1. Install Homebrew
+Run this on a new machine:
+
 ```sh
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+curl -fsSL https://raw.githubusercontent.com/BBischof/dotfiles/main/bootstrap.sh | bash
 ```
 
-### 2. Install zinit
-```sh
-bash -c "$(curl --fail --show-error --silent --location https://raw.githubusercontent.com/zdharma-continuum/zinit/HEAD/scripts/install.sh)"
-```
+This will:
+1. Install [Homebrew](https://brew.sh) (if missing)
+2. Install [zinit](https://github.com/zdharma-continuum/zinit) plugin manager
+3. Install [MesloLGS NF](https://github.com/romkatv/powerlevel10k#fonts) font (required for prompt)
+4. Install [uv](https://github.com/astral-sh/uv) Python package manager
+5. Clone this repo to `~/dev/dotfiles`
+6. Symlink `~/.zshrc` → `~/dev/dotfiles/.zshrc`
 
-### 3. Install MesloLGS NF font (required for Powerlevel10k)
-```sh
-brew install --cask font-meslo-lg-nerd-font
-```
+### After bootstrap — manual steps
 
-Then set your terminal font to **MesloLGS NF**:
-- **iTerm2**: Settings → Profiles → Text → Font
+**1. Set your terminal font**
+- iTerm2: Settings → Profiles → Text → Font → **MesloLGS NF**
 
-### 4. Install uv
-```sh
-curl -LsSf https://astral.sh/uv/install.sh | sh
-```
-
-### 5. Link dotfiles
-```sh
-git clone git@github.com:BBischof/dotfiles.git ~/dev/dotfiles
-cd ~/dev/dotfiles
-./install.sh
-```
-
-This symlinks `~/.zshrc` → `~/dev/dotfiles/.zshrc`. Any edits to `~/.zshrc` are edits to the repo — just commit and push. Existing files are backed up as `.bak` before being replaced.
-
-### 6. Set up Powerlevel10k
-Open a new shell — p10k will prompt you to configure it, or run:
-```sh
-p10k configure
-```
-
-### 7. Optional tools
-```sh
-brew install --cask sublime-text   # EDITOR=subl
-brew install --cask google-cloud-sdk
-brew install rust
-brew install --cask mactex         # TeX Live
-```
-
-### 8. 1Password CLI
-The config reads a service account token from the macOS keychain:
+**2. Add your 1Password CLI service account token**
 ```sh
 security add-generic-password -a "$USER" -s "op-cli-sat" -w "your-token-here"
 ```
 
-### 9. Local secrets (optional)
-If you use a local secrets file, create it at:
+**3. Configure the prompt**
+Open a new shell — Powerlevel10k will walk you through setup automatically, or run:
 ```sh
-~/local_secrets/load_secrets.sh
+p10k configure
 ```
-It will be sourced automatically on shell start.
+
+### Optional tools
+```sh
+brew install --cask sublime-text    # default EDITOR
+brew install --cask google-cloud-sdk
+brew install rust
+brew install --cask mactex          # TeX Live
+```
+
+---
+
+## What's included
+
+- **Prompt**: [Powerlevel10k](https://github.com/romkatv/powerlevel10k) via zinit
+- **Plugins**: zsh-autosuggestions, fast-syntax-highlighting, zsh-completions
+- **Tools configured**: Homebrew, uv, Rust/Cargo, TeX Live, Google Cloud SDK, 1Password CLI
+- **Aliases**: navigation, git, docker, dev tools, OpenMemory project shortcuts
+
+## Ongoing workflow
+
+Since `~/.zshrc` is symlinked to the repo, changes take effect immediately. To save changes:
+
+```sh
+cd ~/dev/dotfiles
+git add .zshrc
+git commit -m "your message"
+git push
+```
 
 ## Migrating from Oh My Zsh
 
 ```sh
-# Remove Oh My Zsh
 uninstall_oh_my_zsh
-
-# Then follow the fresh install steps above
+curl -fsSL https://raw.githubusercontent.com/BBischof/dotfiles/main/bootstrap.sh | bash
 ```
