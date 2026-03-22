@@ -27,7 +27,7 @@ export EDITOR='subl -w'
 LS_COLORS=$LS_COLORS:'di=0;35:' ; export LS_COLORS
 
 # ── zinit + plugins ───────────────────────────────────────────────────────────
-source "$HOME/.zinit/bin/zinit.zsh"
+source "$HOME/.local/share/zinit/zinit.git/zinit.zsh"
 
 zinit light romkatv/powerlevel10k
 zinit light zsh-users/zsh-autosuggestions
