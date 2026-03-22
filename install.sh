@@ -24,4 +24,20 @@ for file in "${DOTFILES[@]}"; do
   fi
 done
 
+# Ghostty config
+mkdir -p "$HOME/.config/ghostty"
+GHOSTTY_SRC="$DOTFILES_DIR/ghostty"
+GHOSTTY_DEST="$HOME/.config/ghostty/config"
+if [ -L "$GHOSTTY_DEST" ]; then
+  echo "already symlinked: $GHOSTTY_DEST"
+elif [ -f "$GHOSTTY_DEST" ]; then
+  echo "backing up existing $GHOSTTY_DEST → $GHOSTTY_DEST.bak"
+  mv "$GHOSTTY_DEST" "$GHOSTTY_DEST.bak"
+  ln -s "$GHOSTTY_SRC" "$GHOSTTY_DEST"
+  echo "linked: $GHOSTTY_DEST → $GHOSTTY_SRC"
+else
+  ln -s "$GHOSTTY_SRC" "$GHOSTTY_DEST"
+  echo "linked: $GHOSTTY_DEST → $GHOSTTY_SRC"
+fi
+
 echo "done. open a new shell or run: source ~/.zshrc"
