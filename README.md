@@ -34,10 +34,14 @@ Then set your terminal font to **MesloLGS NF**:
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-### 5. Copy dotfiles
+### 5. Link dotfiles
 ```sh
-cp .zshrc ~/.zshrc
+git clone git@github.com:BBischof/dotfiles.git ~/dev/dotfiles
+cd ~/dev/dotfiles
+./install.sh
 ```
+
+This symlinks `~/.zshrc` → `~/dev/dotfiles/.zshrc`. Any edits to `~/.zshrc` are edits to the repo — just commit and push. Existing files are backed up as `.bak` before being replaced.
 
 ### 6. Set up Powerlevel10k
 Open a new shell — p10k will prompt you to configure it, or run:
