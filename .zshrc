@@ -13,7 +13,10 @@ export OP_SERVICE_ACCOUNT_TOKEN=$(security find-generic-password -a "$USER" -s "
 
 # ── PATH ──────────────────────────────────────────────────────────────────────
 export PATH="$HOME/.cargo/bin:$PATH"
-export PATH="/usr/local/texlive/2022/bin/universal-darwin:$PATH"
+for _tex_dir in /usr/local/texlive/*/bin/universal-darwin; do
+  [[ -d "$_tex_dir" ]] && export PATH="$_tex_dir:$PATH" && break
+done
+unset _tex_dir
 export PATH="$PATH:$HOME/.local/bin"
 
 # ── uv ────────────────────────────────────────────────────────────────────────
