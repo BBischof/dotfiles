@@ -24,7 +24,8 @@ export PATH="$PATH:$HOME/.local/bin"
 
 # ── Editor & Colors ───────────────────────────────────────────────────────────
 export EDITOR='subl -w'
-LS_COLORS=$LS_COLORS:'di=0;35:' ; export LS_COLORS
+export LSCOLORS="Gxfxcxdxbxegedabagacad"
+export LS_COLORS="di=1;36:$LS_COLORS"
 
 # ── zinit + plugins ───────────────────────────────────────────────────────────
 source "$HOME/.local/share/zinit/zinit.git/zinit.zsh"
