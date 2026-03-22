@@ -1,3 +1,6 @@
+# ── 1Password CLI ─────────────────────────────────────────────────────────────
+export OP_SERVICE_ACCOUNT_TOKEN=$(security find-generic-password -a "$USER" -s "op-cli-sat" -w 2>/dev/null)
+
 # ── Homebrew ──────────────────────────────────────────────────────────────────
 eval "$(/opt/homebrew/bin/brew shellenv)"
 
