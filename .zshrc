@@ -13,9 +13,11 @@ export OP_SERVICE_ACCOUNT_TOKEN=$(security find-generic-password -a "$USER" -s "
 
 # ── PATH ──────────────────────────────────────────────────────────────────────
 export PATH="$HOME/.cargo/bin:$PATH"
+setopt nullglob
 for _tex_dir in /usr/local/texlive/*/bin/universal-darwin; do
   [[ -d "$_tex_dir" ]] && export PATH="$_tex_dir:$PATH" && break
 done
+unsetopt nullglob
 unset _tex_dir
 export PATH="$PATH:$HOME/.local/bin"
 
