@@ -4,6 +4,16 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
+# ── zinit + plugins ───────────────────────────────────────────────────────────
+# p10k must load immediately after instant prompt, before anything produces output
+if [[ -f "$HOME/.local/share/zinit/zinit.git/zinit.zsh" ]]; then
+  source "$HOME/.local/share/zinit/zinit.git/zinit.zsh"
+  zinit ice depth=1; zinit light romkatv/powerlevel10k
+  zinit light zsh-users/zsh-autosuggestions
+  zinit light zdharma-continuum/fast-syntax-highlighting
+  zinit light zsh-users/zsh-completions
+fi
+
 # ── Homebrew ──────────────────────────────────────────────────────────────────
 eval "$(/opt/homebrew/bin/brew shellenv)"
 export PATH="${HOMEBREW_PREFIX}/opt/openssl/bin:$PATH"
@@ -29,15 +39,6 @@ export EDITOR='subl -w'
 export LSCOLORS="Gxfxcxdxbxegedabagacad"
 export LS_COLORS="di=1;36:$LS_COLORS"
 
-# ── zinit + plugins ───────────────────────────────────────────────────────────
-if [[ -f "$HOME/.local/share/zinit/zinit.git/zinit.zsh" ]]; then
-  source "$HOME/.local/share/zinit/zinit.git/zinit.zsh"
-
-  zinit light romkatv/powerlevel10k
-  zinit light zsh-users/zsh-autosuggestions
-  zinit light zdharma-continuum/fast-syntax-highlighting
-  zinit light zsh-users/zsh-completions
-fi
 
 # ── Powerlevel10k config ───────────────────────────────────────────────────────
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
