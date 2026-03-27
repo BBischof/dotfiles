@@ -30,12 +30,14 @@ export LSCOLORS="Gxfxcxdxbxegedabagacad"
 export LS_COLORS="di=1;36:$LS_COLORS"
 
 # ── zinit + plugins ───────────────────────────────────────────────────────────
-source "$HOME/.local/share/zinit/zinit.git/zinit.zsh"
+if [[ -f "$HOME/.local/share/zinit/zinit.git/zinit.zsh" ]]; then
+  source "$HOME/.local/share/zinit/zinit.git/zinit.zsh"
 
-zinit light romkatv/powerlevel10k
-zinit light zsh-users/zsh-autosuggestions
-zinit light zdharma-continuum/fast-syntax-highlighting
-zinit light zsh-users/zsh-completions
+  zinit light romkatv/powerlevel10k
+  zinit light zsh-users/zsh-autosuggestions
+  zinit light zdharma-continuum/fast-syntax-highlighting
+  zinit light zsh-users/zsh-completions
+fi
 
 # ── Powerlevel10k config ───────────────────────────────────────────────────────
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
@@ -76,3 +78,4 @@ alias pr='python -m core.parse_resources --rebuild'
 alias pt='pytest --cov=core --cov=app --cov-report=term-missing:skip-covered'
 alias jt='npm run test:coverage'
 alias et='invoke e2e'
+### End of Zinit's installer chunk
