@@ -32,7 +32,7 @@ unset _tex_dir
 export PATH="$PATH:$HOME/.local/bin"
 
 # ── uv ────────────────────────────────────────────────────────────────────────
-. "$HOME/.local/bin/env"
+[[ -f "$HOME/.local/bin/env" ]] && . "$HOME/.local/bin/env"
 
 # ── Editor & Colors ───────────────────────────────────────────────────────────
 export EDITOR='subl -w'
