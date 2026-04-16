@@ -4,6 +4,16 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
+# ── zinit + plugins ───────────────────────────────────────────────────────────
+# p10k must load immediately after instant prompt, before anything produces output
+if [[ -f "$HOME/.local/share/zinit/zinit.git/zinit.zsh" ]]; then
+  source "$HOME/.local/share/zinit/zinit.git/zinit.zsh"
+  zinit ice depth=1; zinit light romkatv/powerlevel10k
+  zinit light zsh-users/zsh-autosuggestions
+  zinit light zdharma-continuum/fast-syntax-highlighting
+  zinit light zsh-users/zsh-completions
+fi
+
 # ── Homebrew ──────────────────────────────────────────────────────────────────
 eval "$(/opt/homebrew/bin/brew shellenv)"
 export PATH="${HOMEBREW_PREFIX}/opt/openssl/bin:$PATH"
@@ -13,27 +23,22 @@ export OP_SERVICE_ACCOUNT_TOKEN=$(security find-generic-password -a "$USER" -s "
 
 # ── PATH ──────────────────────────────────────────────────────────────────────
 export PATH="$HOME/.cargo/bin:$PATH"
+setopt nullglob
 for _tex_dir in /usr/local/texlive/*/bin/universal-darwin; do
   [[ -d "$_tex_dir" ]] && export PATH="$_tex_dir:$PATH" && break
 done
+unsetopt nullglob
 unset _tex_dir
 export PATH="$PATH:$HOME/.local/bin"
 
 # ── uv ────────────────────────────────────────────────────────────────────────
-. "$HOME/.local/bin/env"
+[[ -f "$HOME/.local/bin/env" ]] && . "$HOME/.local/bin/env"
 
 # ── Editor & Colors ───────────────────────────────────────────────────────────
 export EDITOR='subl -w'
 export LSCOLORS="Gxfxcxdxbxegedabagacad"
 export LS_COLORS="di=1;36:$LS_COLORS"
 
-# ── zinit + plugins ───────────────────────────────────────────────────────────
-source "$HOME/.local/share/zinit/zinit.git/zinit.zsh"
-
-zinit light romkatv/powerlevel10k
-zinit light zsh-users/zsh-autosuggestions
-zinit light zdharma-continuum/fast-syntax-highlighting
-zinit light zsh-users/zsh-completions
 
 # ── Powerlevel10k config ───────────────────────────────────────────────────────
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
@@ -74,3 +79,4 @@ alias pr='python -m core.parse_resources --rebuild'
 alias pt='pytest --cov=core --cov=app --cov-report=term-missing:skip-covered'
 alias jt='npm run test:coverage'
 alias et='invoke e2e'
+### End of Zinit's installer chunk
