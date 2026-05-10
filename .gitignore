@@ -1,0 +1,30 @@
+# ── Secrets & credentials ─────────────────────────────────────────────────────
+.env
+.env.*
+*.secret
+*.secrets
+credentials
+credentials.json
+*_credentials
+*_token
+*.token
+
+# ── Private keys & certificates ───────────────────────────────────────────────
+*.pem
+*.key
+*.p12
+*.pfx
+*.cer
+*.crt
+id_rsa
+id_rsa.*
+id_ed25519
+id_ed25519.*
+id_dsa
+id_ecdsa
+
+# ── Backup files (created by install.sh) ──────────────────────────────────────
+*.bak
+
+# ── macOS ─────────────────────────────────────────────────────────────────────
+.DS_Store
