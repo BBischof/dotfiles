@@ -1,0 +1,8 @@
+#!/bin/sh
+# $3 = 1 means branch checkout (not file checkout)
+[ "$3" = "1" ] || exit 0
+
+branch=$(git branch --show-current)
+new_branch=$(echo "$branch" | sed 's@^codex/@bryan/@' | sed 's@^cursor/@bryan/@' | sed 's@^copilot/@bryan/@' | sed 's@^claude/@bryan/@')
+
+[ "$branch" = "$new_branch" ] || git branch -m "$branch" "$new_branch"
