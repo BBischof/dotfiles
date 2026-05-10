@@ -161,6 +161,15 @@ fi
 arrow "Linking dotfiles..."
 "$DOTFILES_DIR/install.sh"
 
+# ── bb-brand ──────────────────────────────────────────────────────────────────
+header "bb-brand"
+if grep -qF "bb-brand" "$HOME/.zshrc" 2>/dev/null; then
+  ok "brand-init alias already installed"
+else
+  arrow "Installing brand-init alias..."
+  curl -fsSL https://raw.githubusercontent.com/BBischof/bb-brand/main/scripts/install.sh | bash
+fi
+
 # ── Powerlevel10k ─────────────────────────────────────────────────────────────
 manual "Configure prompt: open a new shell and run: p10k configure"
 
