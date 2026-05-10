@@ -40,4 +40,22 @@ else
   echo "linked: $GHOSTTY_DEST → $GHOSTTY_SRC"
 fi
 
+# Git hooks
+GIT_HOOKS_SRC="$DOTFILES_DIR/git-hooks"
+GIT_HOOKS_DEST="$HOME/.config/git/hooks"
+mkdir -p "$GIT_HOOKS_DEST"
+for hook in "$GIT_HOOKS_SRC"/*; do
+  hook_name="$(basename "$hook")"
+  dest_hook="$GIT_HOOKS_DEST/$hook_name"
+  if [ -L "$dest_hook" ]; then
+    echo "already symlinked: $dest_hook"
+  else
+    ln -sf "$hook" "$dest_hook"
+    chmod +x "$dest_hook"
+    echo "linked: $dest_hook → $hook"
+  fi
+done
+git config --global core.hooksPath "$GIT_HOOKS_DEST"
+echo "git hooks installed → $GIT_HOOKS_DEST"
+
 echo "done. open a new shell or run: source ~/.zshrc"

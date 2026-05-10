@@ -148,10 +148,10 @@ fi
 
 # ── Clone / update dotfiles ───────────────────────────────────────────────────
 header "dotfiles"
-DOTFILES_DIR="$HOME/dev/dotfiles"
+DOTFILES_DIR="$HOME/dev_other/dotfiles"
 if [ ! -d "$DOTFILES_DIR" ]; then
   arrow "Cloning dotfiles to $DOTFILES_DIR..."
-  mkdir -p "$HOME/dev"
+  mkdir -p "$HOME/dev_other"
   git clone https://github.com/BBischof/dotfiles.git "$DOTFILES_DIR"
 else
   arrow "Pulling latest dotfiles..."

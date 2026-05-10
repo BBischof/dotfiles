@@ -60,7 +60,7 @@ alias ...='cd ../..'
 
 # ── Aliases: tools ────────────────────────────────────────────────────────────
 alias dco='docker compose'
-alias chrome="open -a 'Google Chrome'"
+alias chrome="/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --process-per-site &>/dev/null &"
 alias code='open -a "Visual Studio Code"'
 alias subl='/Applications/Sublime\ Text.app/Contents/SharedSupport/bin/subl'
 alias catdupheaders="awk 'FNR>1 || NR==1'"
@@ -75,8 +75,20 @@ alias gck='git checkout'
 alias rufflongok="pre-commit run --all-files --hook-stage manual ruff | grep -v \"E501\""
 
 # ── Aliases: OpenMemory ───────────────────────────────────────────────────────
-alias pr='python -m core.parse_resources --rebuild'
+alias pr='uv run -m core.parse_resources --rebuild'
 alias pt='pytest --cov=core --cov=app --cov-report=term-missing:skip-covered'
 alias jt='npm run test:coverage'
 alias et='invoke e2e'
-### End of Zinit's installer chunk
+
+# ── Agent trap: redirect python/python3 to uv ────────────────────────────────
+_real_python=/opt/homebrew/bin/python3
+python-force() { "$_real_python" "$@"; }
+python3-force() { "$_real_python" "$@"; }
+python() {
+  echo "If you're an agent, you should be using uv; if you think this is incorrect, please prompt the user for instructions on how to use python on this machine."
+  return 1
+}
+python3() {
+  echo "If you're an agent, you should be using uv; if you think this is incorrect, please prompt the user for instructions on how to use python on this machine."
+  return 1
+}
