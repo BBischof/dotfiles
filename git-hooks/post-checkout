@@ -5,4 +5,10 @@
 branch=$(git branch --show-current)
 new_branch=$(echo "$branch" | sed 's@^codex/@bryan/@' | sed 's@^cursor/@bryan/@' | sed 's@^copilot/@bryan/@' | sed 's@^claude/@bryan/@')
 
-[ "$branch" = "$new_branch" ] || git branch -m "$branch" "$new_branch"
+if [ "$branch" != "$new_branch" ]; then
+  if git show-ref --verify --quiet "refs/heads/$new_branch"; then
+    echo "post-checkout: skipping rename $branch → $new_branch (target already exists)"
+  else
+    git branch -m "$branch" "$new_branch"
+  fi
+fi

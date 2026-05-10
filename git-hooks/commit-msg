@@ -1,5 +1,5 @@
 #!/bin/sh
 sed -i '' '/^Co-[Aa]uthored-[Bb]y:.*[Cc]laude/d' "$1"
 sed -i '' '/^Co-[Aa]uthored-[Bb]y:.*[Cc]opilot/d' "$1"
-sed -i '' '/^Co-[Aa]uthored-[Bb]y:.*[Gg]it[Hh]ub/d' "$1"
+sed -i '' '/^Co-[Aa]uthored-[Bb]y:.*[Cc]opilot/d' "$1"
 sed -i '' '/^Made-with:.*[Cc]ursor/d' "$1"
