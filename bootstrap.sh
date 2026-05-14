@@ -37,6 +37,15 @@ else
   ok "openssl already installed"
 fi
 
+# ── jq ────────────────────────────────────────────────────────────────────────
+header "jq"
+if ! command -v jq &>/dev/null; then
+  arrow "Installing jq..."
+  brew install jq
+else
+  ok "jq already installed"
+fi
+
 # ── zinit ─────────────────────────────────────────────────────────────────────
 header "zinit"
 if [ ! -d "$HOME/.local/share/zinit" ]; then
