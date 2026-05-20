@@ -70,6 +70,7 @@ main() {
   git checkout main && git pull origin main || return
   [[ -f uv.lock ]] && uv sync
   [[ -f package-lock.json ]] && npm ci
+  :
 }
 alias newb='git checkout -b'
 alias gitac='git add . && git commit'
