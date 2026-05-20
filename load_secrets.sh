@@ -49,7 +49,7 @@ fi
 [[ "$QUIET" != "true" ]] && echo "Loading secrets from '$SECRETS_FILE'..."
 
 # @sh shell-quotes values so objects, newlines, and special chars are handled correctly
-while IFS= read -r assignment; do
+while IFS= read -r -d '' assignment; do
     if [[ -n "$assignment" ]]; then
         key="${assignment%%=*}"
         if [[ ! "$key" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]]; then
@@ -62,7 +62,7 @@ while IFS= read -r assignment; do
             [[ "$QUIET" != "true" ]] && echo "Warning: Failed to export: $key" >&2
         fi
     fi
-done < <(jq -r 'to_entries | .[] | "\(.key)=\(if (.value | type) == "string" then .value else (.value | tojson) end | @sh)"' "$SECRETS_FILE")
+done < <(jq --raw-output0 'to_entries | .[] | "\(.key)=\(if (.value | type) == "string" then .value else (.value | tojson) end | @sh)"' "$SECRETS_FILE")
 
 [[ "$QUIET" != "true" ]] && echo "Secrets loaded successfully!"
 if [[ "$SOURCED" != "true" ]]; then
