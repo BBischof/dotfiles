@@ -3,13 +3,6 @@
 # load_secrets.sh - Load secrets from JSON file into environment variables
 # Usage: source ./load_secrets.sh [secrets_file]
 
-# Save original shell options
-if [[ -o errexit ]]; then
-    ORIGINAL_ERREXIT=true
-else
-    ORIGINAL_ERREXIT=false
-fi
-
 # Determine if being sourced
 (return 0 2>/dev/null) && SOURCED=true || SOURCED=false
 
@@ -26,20 +19,10 @@ DEFAULT_SECRETS_FILE="$HOME/.api_keys"
 # Use provided file or default
 SECRETS_FILE="${1:-$DEFAULT_SECRETS_FILE}"
 
-# Function to restore original shell settings
-restore_shell_settings() {
-    if [[ "$ORIGINAL_ERREXIT" == "true" ]]; then
-        set -e
-    else
-        set +e
-    fi
-}
-
 # Check if file exists
 if [[ ! -f "$SECRETS_FILE" ]]; then
     [[ "$QUIET" != "true" ]] && echo "Warning: Secrets file '$SECRETS_FILE' not found" >&2
     [[ "$QUIET" != "true" ]] && echo "Usage: source ./load_secrets.sh [secrets_file]" >&2
-    restore_shell_settings
     [[ "$SOURCED" == "true" ]] && return 1 || exit 1
 fi
 
@@ -47,14 +30,18 @@ fi
 if ! command -v jq &> /dev/null; then
     [[ "$QUIET" != "true" ]] && echo "Warning: jq is required but not installed" >&2
     [[ "$QUIET" != "true" ]] && echo "Install with: brew install jq" >&2
-    restore_shell_settings
     [[ "$SOURCED" == "true" ]] && return 1 || exit 1
 fi
 
 # Validate JSON format
 if ! jq empty "$SECRETS_FILE" 2>/dev/null; then
     [[ "$QUIET" != "true" ]] && echo "Warning: Invalid JSON format in '$SECRETS_FILE'" >&2
-    restore_shell_settings
+    [[ "$SOURCED" == "true" ]] && return 1 || exit 1
+fi
+
+# Validate top-level type is an object
+if [[ "$(jq -r 'type' "$SECRETS_FILE")" != "object" ]]; then
+    [[ "$QUIET" != "true" ]] && echo "Warning: Secrets file must contain a top-level JSON object" >&2
     [[ "$SOURCED" == "true" ]] && return 1 || exit 1
 fi
 
@@ -69,13 +56,18 @@ while IFS= read -r assignment; do
             [[ "$QUIET" != "true" ]] && echo "Warning: Skipping invalid key: $key" >&2
             continue
         fi
-        eval "export $assignment"
-        [[ "$QUIET" != "true" ]] && echo "Set: $key"
+        if eval "export $assignment"; then
+            [[ "$QUIET" != "true" ]] && echo "Set: $key"
+        else
+            [[ "$QUIET" != "true" ]] && echo "Warning: Failed to export: $key" >&2
+        fi
     fi
 done < <(jq -r 'to_entries | .[] | "\(.key)=\(if (.value | type) == "string" then .value else (.value | tojson) end | @sh)"' "$SECRETS_FILE")
 
 [[ "$QUIET" != "true" ]] && echo "Secrets loaded successfully!"
-[[ "$QUIET" != "true" ]] && echo "Note: These variables are now available in your current shell session."
-
-# Restore original shell settings
-restore_shell_settings
+if [[ "$SOURCED" != "true" ]]; then
+    echo "Warning: Script was executed directly; exports will not persist in the calling shell. Use: source $0" >&2
+else
+    [[ "$QUIET" != "true" ]] && echo "Note: These variables are now available in your current shell session."
+    :
+fi
