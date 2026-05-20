@@ -45,29 +45,30 @@ if [[ "$(jq -r 'type' "$SECRETS_FILE")" != "object" ]]; then
     [[ "$SOURCED" == "true" ]] && return 1 || exit 1
 fi
 
-# Load secrets into environment variables
 [[ "$QUIET" != "true" ]] && echo "Loading secrets from '$SECRETS_FILE'..."
 
-# @sh shell-quotes values so objects, newlines, and special chars are handled correctly
-while IFS= read -r -d $'\0' assignment; do
-    if [[ -n "$assignment" ]]; then
-        key="${assignment%%=*}"
-        if [[ ! "$key" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]]; then
-            [[ "$QUIET" != "true" ]] && echo "Warning: Skipping invalid key: $key" >&2
-            continue
-        fi
-        if eval "export $assignment"; then
-            [[ "$QUIET" != "true" ]] && echo "Set: $key"
-        else
-            [[ "$QUIET" != "true" ]] && echo "Warning: Failed to export: $key" >&2
-        fi
-    fi
-done < <(jq --raw-output0 'to_entries | .[] | "\(.key)=\(if (.value | type) == "string" then .value else (.value | tojson) end | @sh)"' "$SECRETS_FILE")
+# Emit export statements for valid keys; warn on invalid ones.
+# eval processes the full output as a shell script, so @sh-quoted values
+# containing embedded newlines are handled correctly as a unit.
+_load_secrets_script="$(jq -r '
+  to_entries | .[] |
+  if (.key | test("^[A-Za-z_][A-Za-z0-9_]*$")) then
+    "export \(.key)=\(if (.value | type) == "string" then .value else (.value | tojson) end | @sh)"
+  else
+    "echo \"Warning: Skipping invalid key: \(.key)\" >&2"
+  end
+' "$SECRETS_FILE")"
 
-[[ "$QUIET" != "true" ]] && echo "Secrets loaded successfully!"
+if ! eval "$_load_secrets_script"; then
+    [[ "$QUIET" != "true" ]] && echo "Warning: One or more exports failed" >&2
+fi
+unset _load_secrets_script
+
+if [[ "$QUIET" != "true" ]]; then
+    jq -r 'to_entries | .[] | select(.key | test("^[A-Za-z_][A-Za-z0-9_]*$")) | "Set: \(.key)"' "$SECRETS_FILE"
+    echo "Secrets loaded successfully!"
+fi
+
 if [[ "$SOURCED" != "true" ]]; then
     echo "Warning: Script was executed directly; exports will not persist in the calling shell. Use: source $0" >&2
-else
-    [[ "$QUIET" != "true" ]] && echo "Note: These variables are now available in your current shell session."
-    :
 fi
