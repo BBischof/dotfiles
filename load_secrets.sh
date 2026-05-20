@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # load_secrets.sh - Load secrets from JSON file into environment variables
 # Usage: source ./load_secrets.sh [secrets_file]
@@ -40,7 +40,7 @@ if [[ ! -f "$SECRETS_FILE" ]]; then
     [[ "$QUIET" != "true" ]] && echo "Warning: Secrets file '$SECRETS_FILE' not found" >&2
     [[ "$QUIET" != "true" ]] && echo "Usage: source ./load_secrets.sh [secrets_file]" >&2
     restore_shell_settings
-    return 1
+    [[ "$SOURCED" == "true" ]] && return 1 || exit 1
 fi
 
 # Check if jq is available
@@ -48,14 +48,14 @@ if ! command -v jq &> /dev/null; then
     [[ "$QUIET" != "true" ]] && echo "Warning: jq is required but not installed" >&2
     [[ "$QUIET" != "true" ]] && echo "Install with: brew install jq" >&2
     restore_shell_settings
-    return 1
+    [[ "$SOURCED" == "true" ]] && return 1 || exit 1
 fi
 
 # Validate JSON format
 if ! jq empty "$SECRETS_FILE" 2>/dev/null; then
     [[ "$QUIET" != "true" ]] && echo "Warning: Invalid JSON format in '$SECRETS_FILE'" >&2
     restore_shell_settings
-    return 1
+    [[ "$SOURCED" == "true" ]] && return 1 || exit 1
 fi
 
 # Load secrets into environment variables
@@ -64,8 +64,13 @@ fi
 # @sh shell-quotes values so objects, newlines, and special chars are handled correctly
 while IFS= read -r assignment; do
     if [[ -n "$assignment" ]]; then
+        key="${assignment%%=*}"
+        if [[ ! "$key" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]]; then
+            [[ "$QUIET" != "true" ]] && echo "Warning: Skipping invalid key: $key" >&2
+            continue
+        fi
         eval "export $assignment"
-        [[ "$QUIET" != "true" ]] && echo "Set: ${assignment%%=*}"
+        [[ "$QUIET" != "true" ]] && echo "Set: $key"
     fi
 done < <(jq -r 'to_entries | .[] | "\(.key)=\(if (.value | type) == "string" then .value else (.value | tojson) end | @sh)"' "$SECRETS_FILE")
 
