@@ -49,7 +49,7 @@ fi
 [[ "$QUIET" != "true" ]] && echo "Loading secrets from '$SECRETS_FILE'..."
 
 # @sh shell-quotes values so objects, newlines, and special chars are handled correctly
-while IFS= read -r -d '' assignment; do
+while IFS= read -r -d $'\0' assignment; do
     if [[ -n "$assignment" ]]; then
         key="${assignment%%=*}"
         if [[ ! "$key" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]]; then
