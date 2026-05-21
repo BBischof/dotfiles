@@ -29,10 +29,16 @@ echo '{"API_KEY":"abc123","OTHER":"xyz"}' > "$TMP/simple.json"
 result=$(zsh -c "source '$SCRIPT' '$TMP/simple.json' 2>/dev/null && echo \"\$API_KEY \$OTHER\"")
 check "simple string values" "abc123 xyz" "$result"
 
-# 2. JSON object value serialized to string
+# 2. JSON object value serialized to string (compare parsed to avoid key-order brittleness)
 echo '{"CREDS":{"type":"service_account","project":"test"}}' > "$TMP/object.json"
 result=$(zsh -c "source '$SCRIPT' '$TMP/object.json' 2>/dev/null && echo \"\$CREDS\"")
-check "JSON object value serialized" '{"type":"service_account","project":"test"}' "$result"
+type_val=$(echo "$result" | jq -r '.type' 2>/dev/null)
+project_val=$(echo "$result" | jq -r '.project' 2>/dev/null)
+if [[ "$type_val" == "service_account" && "$project_val" == "test" ]]; then
+    pass "JSON object value serialized"
+else
+    fail "JSON object value serialized" "type=service_account,project=test" "type=$type_val,project=$project_val"
+fi
 
 # 3. Multi-line string value (embedded newline)
 printf '{"PEM_KEY":"line1\\nline2"}' > "$TMP/multiline.json"

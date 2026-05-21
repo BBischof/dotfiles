@@ -16,7 +16,7 @@ fi
 _ls_file="${1:-$HOME/.api_keys}"
 
 # Clean up all internal variables except _ls_sourced (needed for return/exit decision)
-_ls_cleanup() { unset _ls_quiet _ls_file _ls_script _ls_failed _ls_cleanup; }
+_ls_cleanup() { unset _ls_quiet _ls_file _ls_script _ls_failed; unset -f _ls_cleanup; }
 
 # Check if file exists
 if [[ ! -f "$_ls_file" ]]; then
@@ -69,7 +69,7 @@ if [[ "$_ls_failed" == "1" ]]; then
 fi
 
 if [[ "$_ls_quiet" != "true" ]]; then
-    jq -r 'to_entries | .[] | select(.key | test("^[A-Za-z_][A-Za-z0-9_]*$")) | "Set: \(.key)"' "$_ls_file"
+    jq -r 'to_entries | .[] | select(.key | test("^[A-Za-z_][A-Za-z0-9_]*$")) | "Set: \(.key)"' -- "$_ls_file"
     echo "Secrets loaded successfully!"
 fi
 
