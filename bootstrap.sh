@@ -162,20 +162,23 @@ arrow "Linking dotfiles..."
 "$DOTFILES_DIR/install.sh"
 
 # ── bb-brand ──────────────────────────────────────────────────────────────────
+# Pinned to a specific commit so reruns are reproducible and the bootstrap
+# isn't at the mercy of whatever currently sits on bb-brand's main branch.
+BB_BRAND_COMMIT="626651816f843a07c055886803b2bdd57cb655b9"
 header "bb-brand"
-if grep -qF "brand-init" "$DOTFILES_DIR/.zshrc" 2>/dev/null; then
+if grep -qE '^# bb-brand$' "$DOTFILES_DIR/.zshrc" 2>/dev/null; then
   ok "brand-init alias already installed"
 else
   arrow "Installing brand-init alias..."
   _bb_script="$(mktemp "${TMPDIR:-/tmp}/bb-brand.XXXXXX")"
   trap 'rm -f "$_bb_script"' EXIT
-  curl -fsSL https://raw.githubusercontent.com/BBischof/bb-brand/main/scripts/install.sh -o "$_bb_script"
+  curl -fsSL "https://raw.githubusercontent.com/BBischof/bb-brand/${BB_BRAND_COMMIT}/scripts/install.sh" -o "$_bb_script"
   bash "$_bb_script"
   rm -f "$_bb_script"; trap - EXIT
   unset _bb_script
   if ! git -C "$DOTFILES_DIR" diff --quiet -- .zshrc 2>/dev/null; then
     manual "bb-brand modified the tracked .zshrc — commit the change:
-     cd $DOTFILES_DIR && git add .zshrc && git commit -m 'Add brand-init alias' && git push"
+     cd \"$DOTFILES_DIR\" && git add .zshrc && git commit -m 'Add brand-init alias' && git push"
   fi
 fi
 
