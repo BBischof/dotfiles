@@ -175,7 +175,7 @@ else
   (
     _bb_script="$(mktemp "${TMPDIR:-/tmp}/bb-brand.XXXXXX")"
     trap 'rm -f "$_bb_script"' EXIT
-    curl -fsSL "https://raw.githubusercontent.com/BBischof/bb-brand/${BB_BRAND_COMMIT}/scripts/install.sh" -o "$_bb_script"
+    curl --fail --silent --show-error --location --retry 3 "https://raw.githubusercontent.com/BBischof/bb-brand/${BB_BRAND_COMMIT}/scripts/install.sh" -o "$_bb_script"
     bash "$_bb_script"
   )
   if ! git -C "$DOTFILES_DIR" diff --quiet -- .zshrc 2>/dev/null; then
