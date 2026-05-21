@@ -50,7 +50,7 @@ fi
 # Warn about invalid keys via a separate jq pass — never pass untrusted key
 # names through eval, even inside an echo statement
 if [[ "$_ls_quiet" != "true" ]]; then
-    jq -r 'to_entries | .[] | select(.key | test("^[A-Za-z_][A-Za-z0-9_]*$") | not) | "Warning: Skipping invalid key: \(.key)"' "$_ls_file" >&2
+    jq -r 'to_entries | .[] | select(.key | test("^[A-Za-z_][A-Za-z0-9_]*$") | not) | "Warning: Skipping invalid key: \(.key)"' -- "$_ls_file" >&2
 fi
 
 # Build export statements for valid keys only. Each line appends a failure
