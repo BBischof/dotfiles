@@ -56,11 +56,15 @@ fi
 # Build export statements for valid keys only. Each line appends a failure
 # flag so partial failures aren't masked by a later successful export.
 # eval handles @sh-quoted multi-line values correctly as a unit.
-_ls_script="$(jq -r '
+if ! _ls_script="$(jq -r '
   to_entries | .[] |
   select(.key | test("^[A-Za-z_][A-Za-z0-9_]*$")) |
   "export \(.key)=\(if (.value | type) == "string" then .value else (.value | tojson) end | @sh) || _ls_failed=1"
-' -- "$_ls_file")"
+' -- "$_ls_file")"; then
+    [[ "$_ls_quiet" != "true" ]] && echo "Warning: Failed to process secrets file" >&2
+    _ls_cleanup
+    [[ "$_ls_sourced" == "true" ]] && { unset _ls_sourced; return 1; } || exit 1
+fi
 
 _ls_failed=0
 eval "$_ls_script"

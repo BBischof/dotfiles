@@ -75,9 +75,13 @@ echo '{"FLAG_TEST":"works"}' > "$TMP/-secrets.json"
 result=$(zsh -c "source '$SCRIPT' '$TMP/-secrets.json' 2>/dev/null && echo \"\$FLAG_TEST\"")
 check "filename starting with - handled" "works" "$result"
 
-# 10. Internal _ls_ variables do not leak into environment
-leftover=$(zsh -c "source '$SCRIPT' '$TMP/simple.json' 2>/dev/null && env | grep '^_ls_'")
+# 10. Internal _ls_ variables do not leak (check both exported and unexported)
+leftover=$(zsh -c "source '$SCRIPT' '$TMP/simple.json' 2>/dev/null && set | grep '^_ls_'")
 check "no _ls_ variables leak" "" "$leftover"
+
+# 11a. _ls_cleanup function itself is removed after sourcing
+func_leak=$(zsh -c "source '$SCRIPT' '$TMP/simple.json' 2>/dev/null && typeset -f _ls_cleanup")
+check "_ls_cleanup function removed after sourcing" "" "$func_leak"
 
 # 11. Direct execution warns about persistence
 warning=$(bash "$SCRIPT" "$TMP/simple.json" 2>&1 | grep "will not persist")
