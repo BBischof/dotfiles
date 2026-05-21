@@ -70,8 +70,8 @@ main() {
   git checkout main && git pull origin main || return
   local root
   root=$(git rev-parse --show-toplevel 2>/dev/null) || return
-  if [[ -f "$root/uv.lock" ]]; then uv sync || return; fi
-  if [[ -f "$root/package-lock.json" ]]; then npm ci || return; fi
+  if [[ -f "$root/uv.lock" ]]; then (cd "$root" && uv sync) || return; fi
+  if [[ -f "$root/package-lock.json" ]]; then (cd "$root" && npm ci) || return; fi
 }
 alias newb='git checkout -b'
 alias gitac='git add . && git commit'
