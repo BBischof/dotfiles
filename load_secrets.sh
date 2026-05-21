@@ -34,12 +34,12 @@ if ! command -v jq &> /dev/null; then
 fi
 
 # Validate JSON format and top-level type
-if ! jq empty "$_ls_file" 2>/dev/null; then
+if ! jq empty -- "$_ls_file" 2>/dev/null; then
     [[ "$_ls_quiet" != "true" ]] && echo "Warning: Invalid JSON format in '$_ls_file'" >&2
     _ls_cleanup
     [[ "$_ls_sourced" == "true" ]] && { unset _ls_sourced; return 1; } || exit 1
 fi
-if [[ "$(jq -r 'type' "$_ls_file")" != "object" ]]; then
+if [[ "$(jq -r 'type' -- "$_ls_file")" != "object" ]]; then
     [[ "$_ls_quiet" != "true" ]] && echo "Warning: Secrets file must contain a top-level JSON object" >&2
     _ls_cleanup
     [[ "$_ls_sourced" == "true" ]] && { unset _ls_sourced; return 1; } || exit 1
@@ -60,7 +60,7 @@ _ls_script="$(jq -r '
   to_entries | .[] |
   select(.key | test("^[A-Za-z_][A-Za-z0-9_]*$")) |
   "export \(.key)=\(if (.value | type) == "string" then .value else (.value | tojson) end | @sh) || _ls_failed=1"
-' "$_ls_file")"
+' -- "$_ls_file")"
 
 _ls_failed=0
 eval "$_ls_script"
