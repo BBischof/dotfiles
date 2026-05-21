@@ -62,7 +62,10 @@ echo "git hooks installed → $GIT_HOOKS_DEST"
 mkdir -p "$HOME/local_secrets"
 SECRETS_LOADER_SRC="$DOTFILES_DIR/load_secrets.sh"
 SECRETS_LOADER_DEST="$HOME/local_secrets/load_secrets.sh"
-if [ -L "$SECRETS_LOADER_DEST" ] && [ "$(readlink "$SECRETS_LOADER_DEST")" = "$SECRETS_LOADER_SRC" ]; then
+if [ -d "$SECRETS_LOADER_DEST" ]; then
+  echo "Error: '$SECRETS_LOADER_DEST' is a directory; remove it manually before running install" >&2
+  exit 1
+elif [ -L "$SECRETS_LOADER_DEST" ] && [ "$(readlink "$SECRETS_LOADER_DEST")" = "$SECRETS_LOADER_SRC" ]; then
   echo "already symlinked: $SECRETS_LOADER_DEST"
 elif [ -f "$SECRETS_LOADER_DEST" ] && [ ! -L "$SECRETS_LOADER_DEST" ]; then
   echo "backing up existing $SECRETS_LOADER_DEST → $SECRETS_LOADER_DEST.bak"
