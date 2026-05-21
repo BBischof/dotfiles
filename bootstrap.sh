@@ -163,11 +163,19 @@ arrow "Linking dotfiles..."
 
 # ── bb-brand ──────────────────────────────────────────────────────────────────
 header "bb-brand"
-if grep -qF "bb-brand" "$HOME/.zshrc" 2>/dev/null; then
+if grep -qF "brand-init" "$DOTFILES_DIR/.zshrc" 2>/dev/null; then
   ok "brand-init alias already installed"
 else
   arrow "Installing brand-init alias..."
-  curl -fsSL https://raw.githubusercontent.com/BBischof/bb-brand/main/scripts/install.sh | bash
+  _bb_script="$(mktemp)"
+  curl -fsSL https://raw.githubusercontent.com/BBischof/bb-brand/main/scripts/install.sh -o "$_bb_script"
+  bash "$_bb_script"
+  rm -f "$_bb_script"
+  unset _bb_script
+  if ! git -C "$DOTFILES_DIR" diff --quiet -- .zshrc 2>/dev/null; then
+    manual "bb-brand modified the tracked .zshrc — commit the change:
+     cd $DOTFILES_DIR && git add .zshrc && git commit -m 'Add brand-init alias' && git push"
+  fi
 fi
 
 # ── Powerlevel10k ─────────────────────────────────────────────────────────────
