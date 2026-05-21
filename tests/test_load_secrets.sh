@@ -82,7 +82,7 @@ stderr=$(zsh -c "QUIET=false source '$SCRIPT' '$TMP/badkey.json'" 2>&1 >/dev/nul
 [[ "$stderr" == *"Skipping reserved/invalid key"* ]] && pass "invalid key warning emitted" || fail "invalid key warning emitted" "*Skipping reserved/invalid key*" "$stderr"
 
 # 10. Invalid key with control characters is JSON-encoded in warning (no terminal injection)
-printf '{"key\x1b[31mred\x1b[0m":"bad","SAFE":"ok"}' > "$TMP/ctrlkey.json"
+printf '%s' '{"key\u001b[31mred\u001b[0m":"bad","SAFE":"ok"}' > "$TMP/ctrlkey.json"
 stderr=$(zsh -c "QUIET=false source '$SCRIPT' '$TMP/ctrlkey.json'" 2>&1 >/dev/null)
 [[ "$stderr" != *$'\x1b'* ]] && pass "control chars in key name are escaped in warning" || fail "control chars in key name are escaped in warning" "no raw ESC" "raw ESC present"
 
