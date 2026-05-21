@@ -170,12 +170,14 @@ if grep -qE '^# bb-brand$' "$DOTFILES_DIR/.zshrc" 2>/dev/null; then
   ok "brand-init alias already installed"
 else
   arrow "Installing brand-init alias..."
-  _bb_script="$(mktemp "${TMPDIR:-/tmp}/bb-brand.XXXXXX")"
-  trap 'rm -f "$_bb_script"' EXIT
-  curl -fsSL "https://raw.githubusercontent.com/BBischof/bb-brand/${BB_BRAND_COMMIT}/scripts/install.sh" -o "$_bb_script"
-  bash "$_bb_script"
-  rm -f "$_bb_script"; trap - EXIT
-  unset _bb_script
+  # Subshell scopes the EXIT trap so we don't disturb any trap the parent
+  # script may set (now or in the future).
+  (
+    _bb_script="$(mktemp "${TMPDIR:-/tmp}/bb-brand.XXXXXX")"
+    trap 'rm -f "$_bb_script"' EXIT
+    curl -fsSL "https://raw.githubusercontent.com/BBischof/bb-brand/${BB_BRAND_COMMIT}/scripts/install.sh" -o "$_bb_script"
+    bash "$_bb_script"
+  )
   if ! git -C "$DOTFILES_DIR" diff --quiet -- .zshrc 2>/dev/null; then
     manual "bb-brand modified the tracked .zshrc — commit the change:
      cd \"$DOTFILES_DIR\" && git add .zshrc && git commit -m 'Add brand-init alias' && git push"
