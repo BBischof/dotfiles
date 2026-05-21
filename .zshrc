@@ -66,7 +66,13 @@ alias subl='/Applications/Sublime\ Text.app/Contents/SharedSupport/bin/subl'
 alias catdupheaders="awk 'FNR>1 || NR==1'"
 
 # ── Aliases: git ──────────────────────────────────────────────────────────────
-alias main='git checkout main && git pull origin main'
+main() {
+  git checkout main && git pull origin main || return
+  local root
+  root=$(git rev-parse --show-toplevel 2>/dev/null) || return
+  if [[ -f "$root/uv.lock" ]]; then (cd "$root" && uv sync) || return; fi
+  if [[ -f "$root/package-lock.json" ]]; then (cd "$root" && npm ci) || return; fi
+}
 alias newb='git checkout -b'
 alias gitac='git add . && git commit'
 alias gck='git checkout'
