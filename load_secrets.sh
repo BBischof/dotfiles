@@ -86,6 +86,8 @@ _ls_failed=0
 eval "$_ls_script"
 if [[ "$_ls_failed" == "1" ]]; then
     [[ "$_ls_quiet" != "true" ]] && echo "Warning: One or more exports failed" >&2
+    _ls_cleanup
+    [[ "$_ls_sourced" == "true" ]] && { unset _ls_sourced; return 1; } || exit 1
 fi
 
 if [[ "$_ls_quiet" != "true" ]]; then
@@ -97,11 +99,11 @@ if [[ "$_ls_quiet" != "true" ]]; then
       ) |
       "Set: \(.key)"
     ' -- "$_ls_file"
-    [[ "$_ls_failed" != "1" ]] && echo "Secrets loaded successfully!"
+    echo "Secrets loaded successfully!"
 fi
 
 if [[ "$_ls_sourced" != "true" ]]; then
-    echo "Warning: Script was executed directly; exports will not persist in the calling shell. Use: source $0" >&2
+    echo "Warning: Script was executed directly; exports will not persist in the calling shell. Use: source \"${BASH_SOURCE[0]:-$0}\"" >&2
 fi
 
 _ls_cleanup
