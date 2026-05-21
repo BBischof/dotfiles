@@ -68,9 +68,10 @@ alias catdupheaders="awk 'FNR>1 || NR==1'"
 # ── Aliases: git ──────────────────────────────────────────────────────────────
 main() {
   git checkout main && git pull origin main || return
-  [[ -f uv.lock ]] && uv sync
-  [[ -f package-lock.json ]] && npm ci
-  :
+  local root
+  root=$(git rev-parse --show-toplevel 2>/dev/null) || return
+  if [[ -f "$root/uv.lock" ]]; then uv sync || return; fi
+  if [[ -f "$root/package-lock.json" ]]; then npm ci || return; fi
 }
 alias newb='git checkout -b'
 alias gitac='git add . && git commit'
