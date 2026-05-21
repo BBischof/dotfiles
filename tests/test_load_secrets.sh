@@ -53,6 +53,13 @@ check "missing file exits non-zero" "1" "$?"
 stderr=$(zsh -c "QUIET=false source '$SCRIPT' '$TMP/nonexistent.json'" 2>&1 >/dev/null)
 [[ "$stderr" == *"not found"* ]] && pass "missing file warns on stderr" || fail "missing file warns on stderr" "*not found*" "$stderr"
 
+# 5b. Unreadable file warns specifically (not "invalid JSON")
+echo '{"KEY":"val"}' > "$TMP/unreadable.json"
+chmod 000 "$TMP/unreadable.json"
+stderr=$(zsh -c "QUIET=false source '$SCRIPT' '$TMP/unreadable.json'" 2>&1 >/dev/null)
+chmod 644 "$TMP/unreadable.json"
+[[ "$stderr" == *"not readable"* ]] && pass "unreadable file warns correctly" || fail "unreadable file warns correctly" "*not readable*" "$stderr"
+
 # 6. Invalid JSON fails gracefully
 echo 'not json' > "$TMP/bad.json"
 zsh -c "source '$SCRIPT' '$TMP/bad.json'" 2>/dev/null
@@ -69,6 +76,11 @@ result=$(zsh -c "source '$SCRIPT' '$TMP/badkey.json' 2>/dev/null && echo \"\$VAL
 check "valid key loaded alongside invalid" "ok" "$result"
 stderr=$(zsh -c "QUIET=false source '$SCRIPT' '$TMP/badkey.json'" 2>&1 >/dev/null)
 [[ "$stderr" == *"Skipping reserved/invalid key"* ]] && pass "invalid key warning emitted" || fail "invalid key warning emitted" "*Skipping reserved/invalid key*" "$stderr"
+
+# 8b. Invalid key with control characters is JSON-encoded in warning (no terminal injection)
+printf '{"key\x1b[31mred\x1b[0m":"bad","SAFE":"ok"}' > "$TMP/ctrlkey.json"
+stderr=$(zsh -c "QUIET=false source '$SCRIPT' '$TMP/ctrlkey.json'" 2>&1 >/dev/null)
+[[ "$stderr" != *$'\x1b'* ]] && pass "control chars in key name are escaped in warning" || fail "control chars in key name are escaped in warning" "no raw ESC" "raw ESC present"
 
 # 9. Filename starting with - is handled via jq's --
 echo '{"FLAG_TEST":"works"}' > "$TMP/-secrets.json"

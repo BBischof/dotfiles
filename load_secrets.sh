@@ -18,10 +18,15 @@ _ls_file="${1:-$HOME/.api_keys}"
 # Clean up all internal variables except _ls_sourced (needed for return/exit decision)
 _ls_cleanup() { unset _ls_quiet _ls_file _ls_script _ls_failed; unset -f _ls_cleanup; }
 
-# Check if file exists
+# Check if file exists and is readable
 if [[ ! -f "$_ls_file" ]]; then
     [[ "$_ls_quiet" != "true" ]] && echo "Warning: Secrets file '$_ls_file' not found" >&2
     [[ "$_ls_quiet" != "true" ]] && echo "Usage: source ./load_secrets.sh [secrets_file]" >&2
+    _ls_cleanup
+    [[ "$_ls_sourced" == "true" ]] && { unset _ls_sourced; return 1; } || exit 1
+fi
+if [[ ! -r "$_ls_file" ]]; then
+    [[ "$_ls_quiet" != "true" ]] && echo "Warning: Secrets file '$_ls_file' is not readable" >&2
     _ls_cleanup
     [[ "$_ls_sourced" == "true" ]] && { unset _ls_sourced; return 1; } || exit 1
 fi
@@ -57,7 +62,7 @@ if [[ "$_ls_quiet" != "true" ]]; then
         (.key | test("^[A-Za-z_][A-Za-z0-9_]*$") | not) or
         (.key | startswith("_ls_"))
       ) |
-      "Warning: Skipping reserved/invalid key: \(.key)"
+      "Warning: Skipping reserved/invalid key: \(.key | @json)"
     ' -- "$_ls_file" >&2
 fi
 

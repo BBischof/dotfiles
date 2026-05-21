@@ -18,6 +18,7 @@ The script checks for each dependency, installs anything missing, and prints a c
 |------|---------|
 | [Homebrew](https://brew.sh) | Package manager |
 | openssl | TLS/SSL |
+| [jq](https://jqlang.github.io/jq/) | JSON processor (required by `load_secrets.sh`) |
 | [zinit](https://github.com/zdharma-continuum/zinit) | Zsh plugin manager |
 | [MesloLGS NF](https://github.com/romkatv/powerlevel10k#fonts) | Font for Powerlevel10k prompt |
 | [uv](https://github.com/astral-sh/uv) | Python package manager |
