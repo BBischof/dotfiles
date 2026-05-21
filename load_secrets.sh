@@ -47,18 +47,29 @@ fi
 
 [[ "$_ls_quiet" != "true" ]] && echo "Loading secrets from '$_ls_file'..."
 
-# Warn about invalid keys via a separate jq pass — never pass untrusted key
-# names through eval, even inside an echo statement
+# _ls_ prefix is reserved for this script's internal state. Keys must also be
+# valid shell identifiers. Warn about anything that would be skipped.
+# This pass is separate from eval so untrusted key names never touch the shell.
 if [[ "$_ls_quiet" != "true" ]]; then
-    jq -r 'to_entries | .[] | select(.key | test("^[A-Za-z_][A-Za-z0-9_]*$") | not) | "Warning: Skipping invalid key: \(.key)"' -- "$_ls_file" >&2
+    jq -r '
+      to_entries | .[] |
+      select(
+        (.key | test("^[A-Za-z_][A-Za-z0-9_]*$") | not) or
+        (.key | startswith("_ls_"))
+      ) |
+      "Warning: Skipping reserved/invalid key: \(.key)"
+    ' -- "$_ls_file" >&2
 fi
 
-# Build export statements for valid keys only. Each line appends a failure
-# flag so partial failures aren't masked by a later successful export.
+# Build export statements for valid, non-reserved keys only.
+# Each line sets a failure flag so partial failures are not masked.
 # eval handles @sh-quoted multi-line values correctly as a unit.
 if ! _ls_script="$(jq -r '
   to_entries | .[] |
-  select(.key | test("^[A-Za-z_][A-Za-z0-9_]*$")) |
+  select(
+    (.key | test("^[A-Za-z_][A-Za-z0-9_]*$")) and
+    (.key | startswith("_ls_") | not)
+  ) |
   "export \(.key)=\(if (.value | type) == "string" then .value else (.value | tojson) end | @sh) || _ls_failed=1"
 ' -- "$_ls_file")"; then
     [[ "$_ls_quiet" != "true" ]] && echo "Warning: Failed to process secrets file" >&2
@@ -73,7 +84,14 @@ if [[ "$_ls_failed" == "1" ]]; then
 fi
 
 if [[ "$_ls_quiet" != "true" ]]; then
-    jq -r 'to_entries | .[] | select(.key | test("^[A-Za-z_][A-Za-z0-9_]*$")) | "Set: \(.key)"' -- "$_ls_file"
+    jq -r '
+      to_entries | .[] |
+      select(
+        (.key | test("^[A-Za-z_][A-Za-z0-9_]*$")) and
+        (.key | startswith("_ls_") | not)
+      ) |
+      "Set: \(.key)"
+    ' -- "$_ls_file"
     echo "Secrets loaded successfully!"
 fi
 

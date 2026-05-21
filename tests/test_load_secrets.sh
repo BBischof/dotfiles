@@ -17,7 +17,7 @@ check() {
     fi
 }
 
-TMP="$(mktemp -d)"
+TMP="$(mktemp -d "${TMPDIR:-/tmp}/load_secrets_test.XXXXXX")"
 trap 'rm -rf "$TMP"' EXIT
 
 echo ""
@@ -68,7 +68,7 @@ echo '{"VALID_KEY":"ok","123invalid":"bad"}' > "$TMP/badkey.json"
 result=$(zsh -c "source '$SCRIPT' '$TMP/badkey.json' 2>/dev/null && echo \"\$VALID_KEY\"")
 check "valid key loaded alongside invalid" "ok" "$result"
 stderr=$(zsh -c "QUIET=false source '$SCRIPT' '$TMP/badkey.json'" 2>&1 >/dev/null)
-[[ "$stderr" == *"Skipping invalid key"* ]] && pass "invalid key warning emitted" || fail "invalid key warning emitted" "*Skipping invalid key*" "$stderr"
+[[ "$stderr" == *"Skipping reserved/invalid key"* ]] && pass "invalid key warning emitted" || fail "invalid key warning emitted" "*Skipping reserved/invalid key*" "$stderr"
 
 # 9. Filename starting with - is handled via jq's --
 echo '{"FLAG_TEST":"works"}' > "$TMP/-secrets.json"
@@ -91,6 +91,15 @@ warning=$(bash "$SCRIPT" "$TMP/simple.json" 2>&1 | grep "will not persist")
 echo '{"PORT":8080}' > "$TMP/number.json"
 result=$(zsh -c "source '$SCRIPT' '$TMP/number.json' 2>/dev/null && echo \"\$PORT\"")
 check "number value exported as string" "8080" "$result"
+
+# 13. _ls_ prefixed keys are skipped (reserved namespace)
+echo '{"_ls_failed":"injected","REAL_KEY":"ok"}' > "$TMP/lsprefix.json"
+result=$(zsh -c "source '$SCRIPT' '$TMP/lsprefix.json' 2>/dev/null && echo \"\$REAL_KEY\"")
+check "_ls_ prefixed key not exported" "ok" "$result"
+result=$(zsh -c "source '$SCRIPT' '$TMP/lsprefix.json' 2>/dev/null && echo \"\${_ls_failed:-unset}\"")
+check "_ls_ prefixed key value not set" "unset" "$result"
+stderr=$(zsh -c "QUIET=false source '$SCRIPT' '$TMP/lsprefix.json'" 2>&1 >/dev/null)
+[[ "$stderr" == *"Skipping reserved/invalid key"* ]] && pass "_ls_ key warning emitted" || fail "_ls_ key warning emitted" "*Skipping reserved/invalid key*" "$stderr"
 
 # ── Summary ───────────────────────────────────────────────────────────────────
 echo ""
