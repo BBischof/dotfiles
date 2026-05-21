@@ -53,58 +53,62 @@ check "missing file exits non-zero" "1" "$?"
 stderr=$(zsh -c "QUIET=false source '$SCRIPT' '$TMP/nonexistent.json'" 2>&1 >/dev/null)
 [[ "$stderr" == *"not found"* ]] && pass "missing file warns on stderr" || fail "missing file warns on stderr" "*not found*" "$stderr"
 
-# 5b. Unreadable file warns specifically (not "invalid JSON")
-echo '{"KEY":"val"}' > "$TMP/unreadable.json"
-chmod 000 "$TMP/unreadable.json"
-stderr=$(zsh -c "QUIET=false source '$SCRIPT' '$TMP/unreadable.json'" 2>&1 >/dev/null)
-chmod 644 "$TMP/unreadable.json"
-[[ "$stderr" == *"not readable"* ]] && pass "unreadable file warns correctly" || fail "unreadable file warns correctly" "*not readable*" "$stderr"
+# 6. Unreadable file warns specifically (not "invalid JSON")
+if [ "$(id -u)" -eq 0 ]; then
+    pass "unreadable file warns correctly (skipped — running as root)"
+else
+    echo '{"KEY":"val"}' > "$TMP/unreadable.json"
+    chmod 000 "$TMP/unreadable.json"
+    stderr=$(zsh -c "QUIET=false source '$SCRIPT' '$TMP/unreadable.json'" 2>&1 >/dev/null)
+    chmod 644 "$TMP/unreadable.json"
+    [[ "$stderr" == *"not readable"* ]] && pass "unreadable file warns correctly" || fail "unreadable file warns correctly" "*not readable*" "$stderr"
+fi
 
-# 6. Invalid JSON fails gracefully
+# 7. Invalid JSON fails gracefully
 echo 'not json' > "$TMP/bad.json"
 zsh -c "source '$SCRIPT' '$TMP/bad.json'" 2>/dev/null
 check "invalid JSON exits non-zero" "1" "$?"
 
-# 7. Non-object top-level type (array) fails with warning
+# 8. Non-object top-level type (array) fails with warning
 echo '[{"key":"val"}]' > "$TMP/array.json"
 stderr=$(zsh -c "QUIET=false source '$SCRIPT' '$TMP/array.json'" 2>&1 >/dev/null)
 [[ "$stderr" == *"top-level JSON object"* ]] && pass "array type rejected with warning" || fail "array type rejected with warning" "*top-level JSON object*" "$stderr"
 
-# 8. Invalid key names are skipped and warned about
+# 9. Invalid key names are skipped and warned about
 echo '{"VALID_KEY":"ok","123invalid":"bad"}' > "$TMP/badkey.json"
 result=$(zsh -c "source '$SCRIPT' '$TMP/badkey.json' 2>/dev/null && echo \"\$VALID_KEY\"")
 check "valid key loaded alongside invalid" "ok" "$result"
 stderr=$(zsh -c "QUIET=false source '$SCRIPT' '$TMP/badkey.json'" 2>&1 >/dev/null)
 [[ "$stderr" == *"Skipping reserved/invalid key"* ]] && pass "invalid key warning emitted" || fail "invalid key warning emitted" "*Skipping reserved/invalid key*" "$stderr"
 
-# 8b. Invalid key with control characters is JSON-encoded in warning (no terminal injection)
+# 10. Invalid key with control characters is JSON-encoded in warning (no terminal injection)
 printf '{"key\x1b[31mred\x1b[0m":"bad","SAFE":"ok"}' > "$TMP/ctrlkey.json"
 stderr=$(zsh -c "QUIET=false source '$SCRIPT' '$TMP/ctrlkey.json'" 2>&1 >/dev/null)
 [[ "$stderr" != *$'\x1b'* ]] && pass "control chars in key name are escaped in warning" || fail "control chars in key name are escaped in warning" "no raw ESC" "raw ESC present"
 
-# 9. Filename starting with - is handled via jq's --
+# 11. Filename starting with - is handled via jq's --
 echo '{"FLAG_TEST":"works"}' > "$TMP/-secrets.json"
 result=$(zsh -c "source '$SCRIPT' '$TMP/-secrets.json' 2>/dev/null && echo \"\$FLAG_TEST\"")
 check "filename starting with - handled" "works" "$result"
 
-# 10. Internal _ls_ variables do not leak (check both exported and unexported)
+# 12. Internal _ls_ variables do not leak (check both exported and unexported)
 leftover=$(zsh -c "source '$SCRIPT' '$TMP/simple.json' 2>/dev/null && set | grep '^_ls_'")
 check "no _ls_ variables leak" "" "$leftover"
 
-# 11a. _ls_cleanup function itself is removed after sourcing
+# 13. _ls_cleanup function itself is removed after sourcing
 func_leak=$(zsh -c "source '$SCRIPT' '$TMP/simple.json' 2>/dev/null && typeset -f _ls_cleanup")
 check "_ls_cleanup function removed after sourcing" "" "$func_leak"
 
-# 11. Direct execution warns about persistence
+# 14. Direct execution warns about persistence
 warning=$(bash "$SCRIPT" "$TMP/simple.json" 2>&1 | grep "will not persist")
 [[ -n "$warning" ]] && pass "direct execution warns about persistence" || fail "direct execution warns about persistence" "warning present" "none"
 
-# 12. Number value exported as string
+# 15. Number value exported as string
 echo '{"PORT":8080}' > "$TMP/number.json"
 result=$(zsh -c "source '$SCRIPT' '$TMP/number.json' 2>/dev/null && echo \"\$PORT\"")
 check "number value exported as string" "8080" "$result"
 
-# 13. _ls_ prefixed keys are skipped (reserved namespace)
+# 16. _ls_ prefixed keys are skipped (reserved namespace)
 echo '{"_ls_failed":"injected","REAL_KEY":"ok"}' > "$TMP/lsprefix.json"
 result=$(zsh -c "source '$SCRIPT' '$TMP/lsprefix.json' 2>/dev/null && echo \"\$REAL_KEY\"")
 check "_ls_ prefixed key not exported" "ok" "$result"
