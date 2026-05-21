@@ -58,7 +58,7 @@ done
 git config --global core.hooksPath "$GIT_HOOKS_DEST"
 echo "git hooks installed → $GIT_HOOKS_DEST"
 
-# load_secrets.sh
+# ── load_secrets.sh ───────────────────────────────────────────────────────────
 mkdir -p "$HOME/local_secrets"
 SECRETS_LOADER_SRC="$DOTFILES_DIR/load_secrets.sh"
 SECRETS_LOADER_DEST="$HOME/local_secrets/load_secrets.sh"

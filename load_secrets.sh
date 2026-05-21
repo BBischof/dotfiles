@@ -92,7 +92,7 @@ if [[ "$_ls_quiet" != "true" ]]; then
       ) |
       "Set: \(.key)"
     ' -- "$_ls_file"
-    echo "Secrets loaded successfully!"
+    [[ "$_ls_failed" != "1" ]] && echo "Secrets loaded successfully!"
 fi
 
 if [[ "$_ls_sourced" != "true" ]]; then
